@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DAFTAPP · Generador de Progresiones</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone@7/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Sora:wght@600;700;800&family=Orbitron:wght@600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+      :root{
+        --ink:#070a12;
+        --ink2:#0e1220;
+        --line:#222a40;
+        --accent:#5b8cff;
+        --accent2:#8b5bff;
+        --gold:#e9c46a;
+        --neon:#36f0d0;
+        --txt:#e8ecf6;
+        --muted:#8b93a9;
+      }
+      *{ font-family:'Inter',system-ui,sans-serif; }
+      h1,h2,h3,.font-display{ font-family:'Sora','Inter',sans-serif; }
+      .font-robot{ font-family:'Orbitron','Sora',sans-serif; }
+      body{ margin:0; background:var(--ink); color:var(--txt); }
+
+      .app-bg{
+        min-height:100vh;
+        background:
+          radial-gradient(1200px 600px at 12% -10%, rgba(91,140,255,.18), transparent 60%),
+          radial-gradient(1000px 500px at 110% 8%, rgba(139,91,255,.16), transparent 55%),
+          radial-gradient(900px 700px at 50% 120%, rgba(54,240,208,.07), transparent 60%),
+          linear-gradient(180deg,#060912 0%, #080b16 40%, #05080f 100%);
+      }
+      .glass{
+        background:linear-gradient(180deg, rgba(255,255,255,.045), rgba(255,255,255,.015));
+        border:1px solid rgba(255,255,255,.08);
+        box-shadow:0 30px 80px -30px rgba(0,0,0,.85), inset 0 1px 0 rgba(255,255,255,.06);
+        backdrop-filter:blur(14px);
+      }
+      .panel-sheet{
+        background:linear-gradient(180deg,#fbfcff 0%, #eef1f9 100%);
+        box-shadow:0 40px 90px -35px rgba(8,12,28,.9), inset 0 1px 0 rgba(255,255,255,.9);
+      }
+      .btn{
+        position:relative; border-radius:16px; font-weight:700; letter-spacing:.2px;
+        transition:transform .18s cubic-bezier(.2,.8,.2,1), box-shadow .25s, filter .25s, background .25s;
+        will-change:transform;
+      }
+      .btn:hover{ transform:translateY(-2px); }
+      .btn:active{ transform:translateY(0) scale(.985); }
+      .btn-grad{
+        background:linear-gradient(135deg, var(--accent), var(--accent2));
+        box-shadow:0 14px 30px -12px rgba(91,140,255,.7), inset 0 1px 0 rgba(255,255,255,.35);
+      }
+      .btn-grad:hover{ filter:brightness(1.08); box-shadow:0 20px 40px -12px rgba(139,91,255,.75), inset 0 1px 0 rgba(255,255,255,.4); }
+      .btn-ghost{ background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.1); }
+      .btn-ghost:hover{ background:rgba(255,255,255,.08); }
+      .btn-punk{
+        background:linear-gradient(135deg, var(--gold) 0%, #e07f2a 55%, #d23bd0 120%);
+        box-shadow:0 18px 40px -14px rgba(233,196,106,.7), inset 0 1px 0 rgba(255,255,255,.45);
+        color:#1a1206;
+      }
+      .btn-punk:hover{ filter:brightness(1.06); box-shadow:0 24px 50px -14px rgba(224,127,42,.8), inset 0 1px 0 rgba(255,255,255,.5); }
+      .chip{ border-radius:14px; border:1px solid rgba(255,255,255,.1); background:rgba(255,255,255,.03); transition:all .2s; }
+      .chip-active{
+        background:linear-gradient(135deg, var(--accent), var(--accent2));
+        border-color:transparent; box-shadow:0 12px 26px -12px rgba(91,140,255,.8), inset 0 1px 0 rgba(255,255,255,.35);
+      }
+      .field{ background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.1); color:var(--txt); border-radius:14px; transition:border .2s, box-shadow .2s, background .2s; }
+      .field:focus{ outline:none; border-color:var(--accent); box-shadow:0 0 0 4px rgba(91,140,255,.18); background:rgba(255,255,255,.06); }
+      .eyebrow{ letter-spacing:.28em; text-transform:uppercase; font-size:11px; color:var(--muted); font-weight:700; }
+      .glow-divider{ height:1px; background:linear-gradient(90deg, transparent, rgba(255,255,255,.14), transparent); }
+      .badge-soft{ background:rgba(91,140,255,.12); border:1px solid rgba(91,140,255,.25); color:#bcd0ff; }
+      .badge-gold{ background:rgba(233,196,106,.12); border:1px solid rgba(233,196,106,.3); color:#f0d99a; }
+      .pulse-dot{ box-shadow:0 0 0 0 rgba(54,240,208,.7); animation:pulse 1.4s infinite; }
+      @keyframes pulse{ 70%{ box-shadow:0 0 0 10px rgba(54,240,208,0);} 100%{ box-shadow:0 0 0 0 rgba(54,240,208,0);} }
+      .fade-in{ animation:fadeIn .5s ease both; }
+      @keyframes fadeIn{ from{ opacity:0; transform:translateY(8px);} to{ opacity:1; transform:translateY(0);} }
+      .level-card{ transition:transform .2s cubic-bezier(.2,.8,.2,1), box-shadow .25s, border-color .2s; }
+      .level-card:hover{ transform:translateY(-3px); border-color:rgba(91,140,255,.4); box-shadow:0 30px 70px -30px rgba(91,140,255,.5), inset 0 1px 0 rgba(255,255,255,.08); }
+
+      /* Aparición de cada acorde al punkear */
+      @keyframes chordPop{ 0%{ transform:translateY(14px) scale(.92); opacity:0; } 60%{ transform:translateY(-2px) scale(1.02); opacity:1; } 100%{ transform:translateY(0) scale(1); opacity:1; } }
+      .chord-pop{ animation:chordPop .42s cubic-bezier(.34,1.56,.64,1) both; }
+
+      /* Acorde resaltado mientras suena (imperativo, sin re-render) */
+      .chord-current{ filter:drop-shadow(0 0 16px rgba(54,240,208,.55)); }
+      .chord-current .chord-card-inner{ border-color:rgba(54,240,208,.8) !important; box-shadow:0 18px 40px -16px rgba(54,240,208,.6), inset 0 1px 0 rgba(255,255,255,1) !important; transform:translateY(-4px); }
+
+      /* Precuenta */
+      .countin-overlay{ position:fixed; inset:0; z-index:60; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:28px; background:rgba(6,9,18,.18); pointer-events:none; }
+      .countin-number{ font-family:'Orbitron','Sora',sans-serif; font-weight:800; font-size:clamp(120px,34vw,280px); line-height:1;
+        background:linear-gradient(135deg,#bcd0ff,#cdb6ff 55%,#e9c46a); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;
+        filter:drop-shadow(0 6px 22px rgba(6,9,18,.85)); opacity:.92; animation:countPop .5s cubic-bezier(.2,.9,.3,1.2) both; }
+      @keyframes countPop{ 0%{ transform:scale(.4); opacity:0; } 45%{ transform:scale(1.08); opacity:.92; } 100%{ transform:scale(1); opacity:.82; } }
+      .countin-dots{ display:flex; gap:16px; }
+      .countin-dot{ width:15px; height:15px; border-radius:999px; background:rgba(255,255,255,.22); border:1px solid rgba(255,255,255,.35); transition:all .25s; }
+      .countin-dot.on{ background:linear-gradient(135deg,#5b8cff,#8b5bff); border-color:transparent; transform:scale(1.18); box-shadow:0 0 16px rgba(91,140,255,.9); }
+
+      ::-webkit-scrollbar{ width:10px; height:10px; }
+      ::-webkit-scrollbar-thumb{ background:rgba(255,255,255,.12); border-radius:8px; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+    <script type="text/babel">
+      const { useState, useRef, useEffect } = React;
+
+      /* ---------- Iconos ---------- */
+      const IcoPlay = ({size=18}) => (<svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor"><polygon points="6 4 20 12 6 20 6 4"/></svg>);
+      const IcoStop = ({size=18}) => (<svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor"><rect x="5" y="5" width="14" height="14" rx="3"/></svg>);
+      const IcoBack = ({size=18}) => (<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>);
+      const IcoExport = ({size=18}) => (<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>);
+      const IcoGuitar = ({size=18}) => (<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 4l-2 2M18 6l-1.5-1.5M16.5 7.5L8 16a4 4 0 1 1-2-2l8.5-8.5"/><circle cx="7" cy="17" r="1"/></svg>);
+      const IcoBolt = ({size=18}) => (<svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor"><polygon points="13 2 3 14 11 14 9 22 21 9 13 9 13 2"/></svg>);
+      const IcoToggleDeg = ({size=18}) => (<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 7h16M4 12h10M4 17h7"/></svg>);
+
+      /* ============================================================
+         TEORÍA MUSICAL
+         ============================================================ */
+      const KEYS = {
+        'C':  { notes:['C','D','E','F','G','A','B'],         rel:'Am'  },
+        'G':  { notes:['G','A','B','C','D','E','F#'],        rel:'Em'  },
+        'D':  { notes:['D','E','F#','G','A','B','C#'],       rel:'Bm'  },
+        'A':  { notes:['A','B','C#','D','E','F#','G#'],       rel:'F#m' },
+        'E':  { notes:['E','F#','G#','A','B','C#','D#'],      rel:'C#m' },
+        'B':  { notes:['B','C#','D#','E','F#','G#','A#'],     rel:'G#m' },
+        'F#': { notes:['F#','G#','A#','B','C#','D#','E#'],    rel:'D#m' },
+        'F':  { notes:['F','G','A','Bb','C','D','E'],         rel:'Dm'  },
+        'Bb': { notes:['Bb','C','D','Eb','F','G','A'],        rel:'Gm'  },
+        'Eb': { notes:['Eb','F','G','Ab','Bb','C','D'],       rel:'Cm'  },
+        'Ab': { notes:['Ab','Bb','C','Db','Eb','F','G'],      rel:'Fm'  },
+        'Db': { notes:['Db','Eb','F','Gb','Ab','Bb','C'],     rel:'Bbm' },
+      };
+      const KEY_ORDER = ['C','G','D','A','E','B','F#','F','Bb','Eb','Ab','Db'];
+      const QUALITY = ['','m','m','','','m','dim'];
+
+      // 6 progresiones (índice de grado 0-6). VI -> vi diatónico.
+      const PROGRESSIONS = [
+        { roman:['vi','I','V','ii'],   deg:[5,0,4,1] },
+        { roman:['ii','V','vi','I'],   deg:[1,4,5,0] },
+        { roman:['iii','vi','IV','I'], deg:[2,5,3,0] },
+        { roman:['ii','IV','vi','V'],  deg:[1,3,5,4] },
+        { roman:['IV','V','iii','vi'], deg:[3,4,2,5] },
+        { roman:['ii','IV'],           deg:[1,3] },
+      ];
+
+      const chordName = (key, degIdx) => KEYS[key].notes[degIdx] + QUALITY[degIdx];
+
+      // semitono de cada nota para frecuencias y diagramas
+      const SEMI = {'C':0,'C#':1,'Db':1,'D':2,'D#':3,'Eb':3,'E':4,'E#':5,'F':5,'F#':6,'Gb':6,'G':7,'G#':8,'Ab':8,'A':9,'A#':10,'Bb':10,'B':11};
+
+      /* ============================================================
+         DIAGRAMAS DE GUITARRA
+         frets: [E A D G B e] (6ta -> 1ra).  -1 = x (muda), 0 = aire, n = traste relativo a "base".
+         base: traste donde empieza el diagrama (1 = clavijero visible).
+         barre: {fret, from, to} índices de cuerda 0..5 (0 = 6ta cuerda).
+         ============================================================ */
+      // Acordes abiertos cómodos
+      const OPEN_SHAPES = {
+        'C':  { base:1, frets:[-1,3,2,0,1,0] },
+        'A':  { base:1, frets:[-1,0,2,2,2,0] },
+        'G':  { base:1, frets:[3,2,0,0,0,3] },
+        'E':  { base:1, frets:[0,2,2,1,0,0] },
+        'D':  { base:1, frets:[-1,-1,0,2,3,2] },
+        'Am': { base:1, frets:[-1,0,2,2,1,0] },
+        'Em': { base:1, frets:[0,2,2,0,0,0] },
+        'Dm': { base:1, frets:[-1,-1,0,2,3,1] },
+        'F':  { base:1, frets:[1,3,3,2,1,1], barre:{fret:1,from:0,to:5} },
+      };
+      // Formas con cejilla relativas (en traste 1)
+      const SHAPE_Emaj = [1,3,3,2,1,1];
+      const SHAPE_Emin = [1,3,3,1,1,1];
+      const SHAPE_Amaj = [-1,1,3,3,3,1];
+      const SHAPE_Amin = [-1,1,3,3,2,1];
+
+      // Construye un acorde con cejilla; prefiere la forma que dé el traste más bajo
+      const barreShape = (root, minor) => {
+        const semi = SEMI[root];
+        // forma E (raíz 6ta cuerda, E=4)
+        let fE = (((semi - 4) % 12) + 12) % 12; if (fE === 0) fE = 12;
+        // forma A (raíz 5ta cuerda, A=9)
+        let fA = (((semi - 9) % 12) + 12) % 12; if (fA === 0) fA = 12;
+        const useA = fA < fE; // el traste más cómodo
+        const fret = useA ? fA : fE;
+        const shape = useA ? (minor?SHAPE_Amin:SHAPE_Amaj) : (minor?SHAPE_Emin:SHAPE_Emaj);
+        return { base:fret, frets:shape, barre:{fret:1, from:useA?1:0, to:5} };
+      };
+
+      const getShape = (name) => {
+        if (OPEN_SHAPES[name]) return OPEN_SHAPES[name];
+        const minor = name.endsWith('m');
+        const root = minor ? name.slice(0,-1) : name;
+        return barreShape(root, minor);
+      };
+
+      /* ---------- Componente: diagrama SVG de un acorde ---------- */
+      const ChordDiagram = ({ name, size=1 }) => {
+        const shape = getShape(name);
+        const W = 88*size, H = 112*size;
+        const padX = 12*size, padTop = 24*size, padBot = 14*size;
+        const strings = 6, fretsShown = 5;
+        const gridW = W - padX*2;
+        const gridH = H - padTop - padBot;
+        const colW = gridW/(strings-1);
+        const rowH = gridH/fretsShown;
+        const x = (s)=> padX + s*colW;                 // s: 0..5 (6ta -> 1ra) izquierda->derecha
+        const y = (f)=> padTop + f*rowH;               // f: 0..5
+        const base = shape.base;
+        const showNut = base === 1;
+
+        const dots = [];
+        const marks = []; // x / o arriba
+        shape.frets.forEach((f, i) => {
+          // i: 0=6ta cuerda (izquierda)
+          if (f === -1) { marks.push({s:i, t:'x'}); return; }
+          if (f === 0) { marks.push({s:i, t:'o'}); return; }
+          dots.push({ s:i, f });
+        });
+
+        return (
+          <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} style={{ display:'block' }}>
+            {/* marca de traste base si no es cejilla en 1 */}
+            {!showNut && (
+              <text x={padX - 5*size} y={y(0.7)} textAnchor="end" fontSize={11*size} fontWeight="700" fill="#5b6478" fontFamily="Inter">{base}</text>
+            )}
+            {/* nut (cejuela) */}
+            {showNut && <rect x={padX-1} y={padTop-3*size} width={gridW+2} height={3.4*size} rx={1.5} fill="#0b0f1a" />}
+            {/* trastes horizontales */}
+            {Array.from({length:fretsShown+1}).map((_,f)=>(
+              <line key={'f'+f} x1={padX} y1={y(f)} x2={padX+gridW} y2={y(f)} stroke="#c2c8d6" strokeWidth={ (showNut && f===0) ? 0 : 1*size } />
+            ))}
+            {/* cuerdas verticales */}
+            {Array.from({length:strings}).map((_,s)=>(
+              <line key={'s'+s} x1={x(s)} y1={padTop} x2={x(s)} y2={padTop+gridH} stroke="#9aa2b5" strokeWidth={1*size} />
+            ))}
+            {/* cejilla (barre) */}
+            {shape.barre && (
+              <rect x={x(shape.barre.from)-4*size} y={y(shape.barre.fret-0.5)-4.5*size}
+                    width={(shape.barre.to-shape.barre.from)*colW+8*size} height={9*size}
+                    rx={4.5*size} fill="#1d2740" opacity="0.92" />
+            )}
+            {/* x / o */}
+            {marks.map((m,i)=>(
+              m.t==='x'
+                ? <g key={'m'+i}><line x1={x(m.s)-3.2*size} y1={padTop-12*size} x2={x(m.s)+3.2*size} y2={padTop-6*size} stroke="#9aa2b5" strokeWidth={1.6*size} strokeLinecap="round"/><line x1={x(m.s)+3.2*size} y1={padTop-12*size} x2={x(m.s)-3.2*size} y2={padTop-6*size} stroke="#9aa2b5" strokeWidth={1.6*size} strokeLinecap="round"/></g>
+                : <circle key={'m'+i} cx={x(m.s)} cy={padTop-9*size} r={3.4*size} fill="none" stroke="#5b6478" strokeWidth={1.5*size}/>
+            ))}
+            {/* dedos (puntos) */}
+            {dots.map((d,i)=>(
+              <circle key={'d'+i} cx={x(d.s)} cy={y(d.f-0.5)} r={5.4*size}
+                fill="url(#cg)" stroke="#1b3a8a" strokeWidth={0.8*size}/>
+            ))}
+            <defs>
+              <linearGradient id="cg" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#6ea8ff"/><stop offset="100%" stopColor="#2f6bff"/>
+              </linearGradient>
+            </defs>
+          </svg>
+        );
+      };
+
+      /* ---------- Pie de página ---------- */
+      const Footer = () => (
+        <footer style={{ width:'100%', maxWidth:'1040px', margin:'8px auto 0', textAlign:'center', padding:'10px 0 2px' }}>
+          <a href="https://instagram.com/mercadoernesto" target="_blank" rel="noopener noreferrer"
+            style={{ display:'inline-flex', alignItems:'center', gap:'8px', color:'var(--muted)', textDecoration:'none', fontSize:'13px', fontWeight:600, transition:'color .2s' }}
+            onMouseEnter={(e)=>{ e.currentTarget.style.color='#bcd0ff'; }}
+            onMouseLeave={(e)=>{ e.currentTarget.style.color='var(--muted)'; }}>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="2" y="2" width="20" height="20" rx="5.5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/>
+            </svg>
+            @mercadoernesto
+          </a>
+        </footer>
+      );
+
+      /* ============================================================
+         APP
+         ============================================================ */
+      const DaftApp = () => {
+        const [screen, setScreen] = useState(0);     // 0 = elegir tonalidad, 1 = generador
+        const [keyName, setKeyName] = useState('C');
+        const BPM = 160; // velocidad fija
+
+        // orden barajado de las 6 progresiones; recorre todas sin repetir y reinicia
+        const [order, setOrder] = useState([]);
+        const [orderPos, setOrderPos] = useState(0);
+        const [current, setCurrent] = useState(null);   // {roman, deg, chords}
+        const [popKey, setPopKey] = useState(0);        // fuerza animación
+
+        const [isPlaying, setIsPlaying] = useState(false);
+        const [countIn, setCountIn] = useState(0);
+
+        const [isMobile, setIsMobile] = useState(typeof window!=='undefined' ? window.innerWidth<760 : false);
+        useEffect(()=>{ const r=()=>setIsMobile(window.innerWidth<760); window.addEventListener('resize',r); return ()=>window.removeEventListener('resize',r); },[]);
+
+        const audioRef = useRef(null);
+        const ctrlRef = useRef(null);
+        const exportRef = useRef(null);
+        const chordRefs = useRef({});
+        const currentChordKeyRef = useRef(null);
+        const currentRef = useRef(null);
+        useEffect(()=>{ currentRef.current = current; },[current]);
+
+        const shuffle = (arr) => {
+          const a = arr.slice();
+          for (let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; }
+          return a;
+        };
+
+        const buildProg = (idx) => {
+          const p = PROGRESSIONS[idx];
+          return { roman:p.roman, deg:p.deg, chords:p.deg.map(d=>chordName(keyName,d)) };
+        };
+
+        const punkear = () => {
+          let ord = order, pos = orderPos;
+          if (ord.length === 0 || pos >= ord.length) {
+            // nuevo ciclo: baraja, evitando repetir la última si se puede
+            let next = shuffle(PROGRESSIONS.map((_,i)=>i));
+            if (current && next[0] === order[orderPos-1]) { next.push(next.shift()); }
+            ord = next; pos = 0;
+            setOrder(ord);
+          }
+          const idx = ord[pos];
+          setCurrent(buildProg(idx));
+          setOrderPos(pos+1);
+          setPopKey(k=>k+1);
+        };
+
+        /* ---------- Audio ---------- */
+        const noteFreq = (note, octave) => {
+          // octave de referencia; usamos una octava media agradable
+          const n = SEMI[note];
+          return 440 * Math.pow(2, (n - 9)/12) * Math.pow(2, octave-4);
+        };
+        // triada de un acorde (root, calidad) -> frecuencias
+        const chordFreqs = (name) => {
+          const minor = name.endsWith('m');
+          const dim = name.endsWith('dim');
+          let root = name; if(dim) root=name.slice(0,-3); else if(minor) root=name.slice(0,-1);
+          const r = SEMI[root];
+          const third = minor||dim ? 3 : 4;
+          const fifth = dim ? 6 : 7;
+          const base = 3; // octava grave del acorde
+          const mk = (semi)=> 440*Math.pow(2,(r+semi-9)/12)*Math.pow(2, base-4)*2;
+          return [mk(0), mk(third), mk(fifth), mk(12)];
+        };
+
+        const makeClick = (ctx,t,strong) => {
+          const o=ctx.createOscillator(), g=ctx.createGain();
+          o.connect(g); g.connect(ctx.destination);
+          o.type='square'; o.frequency.value= strong? 1000:760;
+          g.gain.setValueAtTime(0.18,t); g.gain.exponentialRampToValueAtTime(0.001,t+0.06);
+          o.start(t); o.stop(t+0.07);
+        };
+        // pad sintético tipo Daft Punk (saw + filtro) que dura toda la redonda
+        const playChord = (ctx, t, name, dur=1.5) => {
+          const freqs = chordFreqs(name);
+          const sustain = Math.max(0.4, dur - 0.12);   // mantiene el acorde casi toda la redonda
+          const release = dur;                          // se apaga justo al final
+          const master = ctx.createGain();
+          master.gain.setValueAtTime(0.0001,t);
+          master.gain.exponentialRampToValueAtTime(0.17,t+0.02);          // ataque
+          master.gain.exponentialRampToValueAtTime(0.11,t+sustain);       // sostenido
+          master.gain.exponentialRampToValueAtTime(0.0001,t+release);     // release al final de la redonda
+          const lp = ctx.createBiquadFilter(); lp.type='lowpass';
+          lp.frequency.setValueAtTime(2600,t);
+          lp.frequency.exponentialRampToValueAtTime(1100,t+sustain);
+          lp.Q.value=5;
+          master.connect(lp); lp.connect(ctx.destination);
+          freqs.forEach((f,i)=>{
+            const o=ctx.createOscillator(); o.type='sawtooth';
+            o.frequency.value=f;
+            const g=ctx.createGain(); g.gain.value = i===0?0.5: i===3?0.25:0.4;
+            o.connect(g); g.connect(master);
+            o.start(t); o.stop(t+release+0.05);
+          });
+        };
+
+        const highlightChord = (i) => {
+          const prev = currentChordKeyRef.current;
+          if (prev!=null && chordRefs.current[prev]) chordRefs.current[prev].classList.remove('chord-current');
+          if (i<0){ currentChordKeyRef.current=null; return; }
+          const el = chordRefs.current[i];
+          if (el) el.classList.add('chord-current');
+          currentChordKeyRef.current = i;
+        };
+
+        const play = () => {
+          const cur = currentRef.current;
+          if (!cur) return;
+          if (!audioRef.current) audioRef.current = new (window.AudioContext||window.webkitAudioContext)();
+          const ctx = audioRef.current;
+          if (ctx.state==='suspended') ctx.resume();
+
+          setIsPlaying(true);
+          const ctrl = { stopped:false, timeouts:[], raf:null };
+          ctrlRef.current = ctrl;
+
+          const beatMs = 60000 / BPM;
+          const start = ctx.currentTime + 0.12;
+
+          // precuenta de 4 negras
+          for (let i=0;i<4;i++){
+            const tAbs = start + i*(beatMs/1000);
+            makeClick(ctx, tAbs, false);
+            ctrl.timeouts.push(setTimeout(()=>{ if(!ctrl.stopped) setCountIn(i+1); }, Math.max(0,(tAbs-ctx.currentTime)*1000)));
+          }
+          const patternStart = start + 4*(beatMs/1000);
+          ctrl.timeouts.push(setTimeout(()=>{ if(!ctrl.stopped) setCountIn(0); }, Math.max(0,(patternStart-ctx.currentTime)*1000)));
+
+          // cada acorde dura una REDONDA (4 negras). Repite el ciclo.
+          const chords = cur.chords;
+          const n = chords.length;
+          const whole = 4*(beatMs/1000);   // duración de una redonda, en segundos
+          const loops = 2;                 // repite el patrón 2 veces
+          let step = 0;                    // índice de acorde (cada uno = 1 redonda)
+          const schedule = () => {
+            if (ctrl.stopped) return;
+            const now = ctx.currentTime;
+            while (true) {
+              const tAbs = patternStart + step*whole;
+              if (tAbs > now + 0.2) break;
+              const idx = step % n;
+              makeClick(ctx, tAbs, true);                 // clic al inicio de cada acorde (tiempo fuerte)
+              playChord(ctx, tAbs, chords[idx], whole);   // suena toda la redonda
+              ctrl.timeouts.push(setTimeout(()=>{ if(!ctrl.stopped) highlightChord(idx); }, Math.max(0,(tAbs-ctx.currentTime)*1000)));
+              step++;
+              if (step >= n*loops){
+                const endT = patternStart + step*whole;
+                ctrl.timeouts.push(setTimeout(()=>{ if(!ctrl.stopped){ stop(); } }, Math.max(0,(endT-ctx.currentTime)*1000)));
+                return;
+              }
+            }
+            ctrl.raf = setTimeout(schedule, 25);
+          };
+          ctrl.raf = setTimeout(schedule, 25);
+        };
+
+        const stop = () => {
+          const ctrl = ctrlRef.current;
+          if (ctrl){ ctrl.stopped=true; if(ctrl.raf) clearTimeout(ctrl.raf); ctrl.timeouts.forEach(clearTimeout); ctrlRef.current=null; }
+          setIsPlaying(false); setCountIn(0); highlightChord(-1);
+        };
+
+        // barra espaciadora = punkear (si no suena) o play/stop con tecla P
+        const punkRef = useRef(()=>{}); punkRef.current = punkear;
+        const playRef = useRef(()=>{}); playRef.current = ()=>{ if(isPlaying) stop(); else play(); };
+        useEffect(()=>{
+          const onKey = (e)=>{
+            const tag=(e.target&&e.target.tagName)||''; const ed=e.target&&e.target.isContentEditable;
+            if (tag==='INPUT'||tag==='TEXTAREA'||ed) return;
+            if (screen!==1) return;
+            if (e.code==='Space'){ e.preventDefault(); punkRef.current(); }
+            if (e.key==='p'||e.key==='P'){ e.preventDefault(); playRef.current(); }
+          };
+          window.addEventListener('keydown', onKey);
+          return ()=>window.removeEventListener('keydown', onKey);
+        },[screen, isPlaying]);
+
+        const exportImage = () => {
+          const el = exportRef.current; if(!el) return;
+          if (typeof window.html2canvas==='undefined'){ setTimeout(exportImage,300); return; }
+          window.html2canvas(el,{scale:2,backgroundColor:'#ffffff'}).then(canvas=>{
+            const link=document.createElement('a');
+            link.download=`daftapp-${keyName}.png`;
+            link.href=canvas.toDataURL('image/png');
+            document.body.appendChild(link); link.click(); document.body.removeChild(link);
+          }).catch(console.error);
+        };
+
+        /* ============ PANTALLA 0: ELEGIR TONALIDAD ============ */
+        if (screen === 0) {
+          return (
+            <div className="app-bg" style={{ display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', padding:'24px', gap:'18px' }}>
+              <div className="fade-in" style={{ width:'100%', maxWidth:'560px' }}>
+                <div style={{ textAlign:'center', marginBottom:'26px' }}>
+                  <div className="badge-gold" style={{ display:'inline-flex', alignItems:'center', gap:'8px', padding:'6px 14px', borderRadius:'999px', fontSize:'12px', fontWeight:700, marginBottom:'18px' }}>
+                    <IcoBolt size={14}/> GENERADOR DE PROGRESIONES
+                  </div>
+                  <h1 className="font-robot" style={{ fontSize:'clamp(44px,11vw,68px)', fontWeight:900, lineHeight:.95, margin:'0 0 12px', letterSpacing:'.04em',
+                    background:'linear-gradient(135deg,#bcd0ff,#cdb6ff 50%,#e9c46a)', WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent' }}>
+                    DAFTAPP
+                  </h1>
+                  <p style={{ color:'var(--muted)', fontSize:'15px', margin:0, maxWidth:'400px', marginLeft:'auto', marginRight:'auto' }}>
+                    Elige una tonalidad y genera progresiones con groove. Cada tonalidad muestra su relativo menor.
+                  </p>
+                </div>
+
+                <div className="glass" style={{ borderRadius:'24px', padding: isMobile?'22px':'30px' }}>
+                  <div className="eyebrow" style={{ marginBottom:'14px', textAlign:'center' }}>Tonalidad</div>
+                  <div style={{ display:'grid', gridTemplateColumns:'repeat(3, 1fr)', gap:'10px' }}>
+                    {KEY_ORDER.map(k => {
+                      const active = keyName===k;
+                      return (
+                        <button key={k} onClick={()=>setKeyName(k)}
+                          className={`chip ${active?'chip-active':''}`}
+                          style={{ padding:'16px 6px', display:'flex', alignItems:'center', justifyContent:'center', color: active?'#fff':'var(--txt)' }}>
+                          <span className="font-display" style={{ fontSize:'20px', fontWeight:800 }}>{k}/{KEYS[k].rel}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  <div className="glow-divider" style={{ margin:'22px 0' }}></div>
+
+                  <button onClick={()=>{ setScreen(1); setCurrent(null); setOrder([]); setOrderPos(0); }}
+                    className="btn btn-punk" style={{ width:'100%', padding:'18px', fontSize:'18px', display:'flex', alignItems:'center', justifyContent:'center', gap:'10px' }}>
+                    <IcoBolt/> Entrar en {keyName} mayor
+                  </button>
+                </div>
+              </div>
+              <Footer/>
+            </div>
+          );
+        }
+
+        /* ============ PANTALLA 1: GENERADOR ============ */
+        const ToolBtn = ({ onClick, children, variant='ghost', active }) => {
+          let bg, color='var(--txt)', shadow='none';
+          if (active){ bg='linear-gradient(135deg,#36f0d0,#0f9e9e)'; color='#04201d'; shadow='0 14px 30px -12px rgba(54,240,208,.55)'; }
+          else if (variant==='stop'){ bg='linear-gradient(135deg,#ff5a6e,#e23b52)'; color='#fff'; shadow='0 14px 30px -12px rgba(255,90,110,.6)'; }
+          else if (variant==='play'){ bg='linear-gradient(135deg,#21c47a,#0f9e63)'; color='#fff'; shadow='0 14px 30px -12px rgba(33,196,122,.6)'; }
+          else if (variant==='grad'){ bg='linear-gradient(135deg, var(--accent), var(--accent2))'; color='#fff'; shadow='0 14px 30px -12px rgba(91,140,255,.7)'; }
+          else { bg='rgba(255,255,255,.04)'; }
+          return (
+            <button onClick={onClick} className="btn"
+              style={{ display:'flex', alignItems:'center', gap:'9px', padding:'13px 18px', fontSize:'14px', fontWeight:700, borderRadius:'16px', cursor:'pointer',
+                border:(variant==='ghost'&&!active)?'1px solid rgba(255,255,255,.1)':'1px solid transparent', background:bg, color, boxShadow:shadow }}>
+              {children}
+            </button>
+          );
+        };
+
+        const chordCount = current ? current.chords.length : 0;
+
+        return (
+          <div className="app-bg" style={{ padding: isMobile?'20px 10px 50px':'28px 20px 60px', position:'relative' }}>
+            {countIn>0 && (
+              <div className="countin-overlay">
+                <div key={countIn} className="countin-number">{countIn}</div>
+                <div className="countin-dots">{[1,2,3,4].map(n=><span key={n} className={`countin-dot${n<=countIn?' on':''}`}></span>)}</div>
+              </div>
+            )}
+
+            <div style={{ maxWidth:'1040px', margin:'0 auto' }}>
+              {/* Header */}
+              <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:'22px', flexWrap:'wrap', gap:'12px' }}>
+                <button onClick={()=>{ stop(); setScreen(0); }} className="btn btn-ghost" style={{ display:'flex', alignItems:'center', gap:'9px', padding:'12px 18px', color:'var(--txt)' }}>
+                  <IcoBack/> Cambiar tonalidad
+                </button>
+                <div className="badge-gold" style={{ display:'inline-flex', alignItems:'center', gap:'8px', padding:'8px 16px', borderRadius:'999px', fontSize:'12px', fontWeight:700 }}>
+                  <IcoGuitar size={14}/> {keyName} mayor · rel. {KEYS[keyName].rel}
+                </div>
+              </div>
+
+              {/* Hoja / partitura */}
+              <div ref={exportRef} className="panel-sheet" style={{ borderRadius:'24px', padding: isMobile?'26px 14px':'42px 36px', marginBottom:'20px', minHeight:'200px' }}>
+                <div style={{ textAlign:'center', marginBottom:'8px' }}>
+                  <span className="font-robot" style={{ fontSize: isMobile?'13px':'15px', fontWeight:800, letterSpacing:'.18em', color:'#2f6bff' }}>
+                    {keyName.toUpperCase()} MAYOR
+                  </span>
+                </div>
+
+                {!current ? (
+                  <div style={{ textAlign:'center', padding: isMobile?'30px 10px':'48px 20px', color:'#5b6478' }}>
+                    <div style={{ fontSize:'18px', fontWeight:700, color:'#0b0f1a', marginBottom:'6px' }}>Listo para empezar</div>
+                    <div style={{ fontSize:'14px' }}>Presiona <b style={{color:'#2f6bff'}}>Punkear</b> para generar tu primera progresión.</div>
+                  </div>
+                ) : (
+                  <div key={popKey} style={{ display:'flex', flexWrap:'wrap', alignItems:'flex-start', justifyContent:'center', gap: isMobile?'14px':'26px', paddingTop:'10px' }}>
+                    {current.chords.map((c, i) => (
+                      <div key={i} ref={el=>chordRefs.current[i]=el}
+                        className="chord-pop"
+                        style={{ animationDelay:`${i*0.07}s`, display:'flex', flexDirection:'column', alignItems:'center', gap:'8px', minWidth: isMobile?'96px':'112px' }}>
+                        <div className="chord-card-inner" style={{
+                          background:'#fff', border:'1.5px solid #dde3ef', borderRadius:'16px',
+                          padding: isMobile?'10px 12px':'14px 16px', display:'flex', flexDirection:'column', alignItems:'center', gap:'6px',
+                          boxShadow:'0 12px 26px -16px rgba(11,15,26,.4), inset 0 1px 0 rgba(255,255,255,1)', transition:'transform .2s, box-shadow .2s, border-color .2s' }}>
+                          <div className="font-display" style={{ fontSize: isMobile?'30px':'36px', fontWeight:800, color:'#0b0f1a', lineHeight:1 }}>{c}</div>
+                          <ChordDiagram name={c} size={isMobile?0.92:1}/>
+                        </div>
+                        <div style={{ fontFamily:'Sora,Inter', fontSize: isMobile?'15px':'17px', fontWeight:700, color:'#8a93a8', letterSpacing:'.02em' }}>
+                          {current.roman[i]}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Controles */}
+              <div className="glass" style={{ borderRadius:'20px', padding:'20px' }}>
+                <div style={{ display:'flex', flexWrap:'wrap', alignItems:'center', justifyContent:'center', gap:'14px' }}>
+                  <button onClick={punkear} className="btn btn-punk" style={{ display:'flex', alignItems:'center', gap:'10px', padding:'16px 30px', fontSize:'17px' }}>
+                    <IcoBolt/> Punkear
+                  </button>
+                  <ToolBtn onClick={isPlaying?stop:play} variant={isPlaying?'stop':'play'}>
+                    {isPlaying ? <><IcoStop/> Detener</> : <><IcoPlay/> Escuchar</>}
+                  </ToolBtn>
+                  <ToolBtn onClick={exportImage} variant="grad"><IcoExport/> Exportar PNG</ToolBtn>
+                </div>
+                <div style={{ textAlign:'center', marginTop:'12px', fontSize:'12px', color:'var(--muted)' }}>
+                  Cada vez sale una progresión distinta · <b>Espacio</b> = Punkear · <b>P</b> = Escuchar
+                </div>
+                {isPlaying && (
+                  <div style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:'8px', marginTop:'12px', color:'#7be0d0', fontSize:'13px', fontWeight:600 }}>
+                    <span className="pulse-dot" style={{ width:'9px', height:'9px', borderRadius:'999px', background:'#36f0d0' }}></span>
+                    Reproduciendo…
+                  </div>
+                )}
+              </div>
+
+              <Footer/>
+            </div>
+          </div>
+        );
+      };
+
+      ReactDOM.render(<DaftApp/>, document.getElementById('root'));
+    </script>
+</body>
+</html>
