@@ -285,7 +285,9 @@
          APP
          ============================================================ */
       const DaftApp = () => {
-        const [screen, setScreen] = useState(0);     // 0 = elegir tonalidad, 1 = generador
+        const [screen, setScreen] = useState(-1);    // -1 = email gate, 0 = elegir tonalidad, 1 = generador
+        const [email, setEmail] = useState('');
+        const [emailError, setEmailError] = useState('');
         const [keyName, setKeyName] = useState('C');
         const BPM = 160; // velocidad fija
 
@@ -476,6 +478,60 @@
             document.body.appendChild(link); link.click(); document.body.removeChild(link);
           }).catch(console.error);
         };
+
+        /* ============ PANTALLA -1: EMAIL GATE ============ */
+        if (screen === -1) {
+          const handleEmail = () => {
+            const val = email.trim();
+            if (!val) { setEmailError('Ingresa tu email para continuar.'); return; }
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)) { setEmailError('Email inválido, verifica el formato.'); return; }
+            setEmailError('');
+            setScreen(0);
+          };
+          return (
+            <div className="app-bg" style={{ display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', minHeight:'100vh', padding:'24px', gap:'18px' }}>
+              <div className="fade-in" style={{ width:'100%', maxWidth:'420px' }}>
+                <div style={{ textAlign:'center', marginBottom:'28px' }}>
+                  <div className="badge-gold" style={{ display:'inline-flex', alignItems:'center', gap:'8px', padding:'6px 14px', borderRadius:'999px', fontSize:'12px', fontWeight:700, marginBottom:'18px' }}>
+                    <IcoBolt size={14}/> GENERADOR DE PROGRESIONES
+                  </div>
+                  <h1 className="font-robot" style={{ fontSize:'clamp(44px,11vw,68px)', fontWeight:900, lineHeight:.95, margin:'0 0 14px', letterSpacing:'.04em',
+                    background:'linear-gradient(135deg,#bcd0ff,#cdb6ff 50%,#e9c46a)', WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent' }}>
+                    DAFTAPP
+                  </h1>
+                  <p style={{ color:'var(--muted)', fontSize:'14px', margin:0 }}>
+                    Ingresa tu email para acceder a la app.
+                  </p>
+                </div>
+
+                <div className="glass" style={{ borderRadius:'24px', padding:'30px' }}>
+                  <label style={{ display:'block', fontSize:'12px', fontWeight:700, color:'var(--muted)', letterSpacing:'.12em', textTransform:'uppercase', marginBottom:'10px' }}>
+                    Email
+                  </label>
+                  <input
+                    className="field"
+                    type="email"
+                    placeholder="tu@email.com"
+                    value={email}
+                    onChange={e=>{ setEmail(e.target.value); setEmailError(''); }}
+                    onKeyDown={e=>{ if(e.key==='Enter') handleEmail(); }}
+                    style={{ width:'100%', padding:'14px 16px', fontSize:'15px', boxSizing:'border-box', marginBottom:'8px' }}
+                    autoFocus
+                  />
+                  {emailError && (
+                    <div style={{ fontSize:'12px', color:'#ff7b8a', marginBottom:'10px', fontWeight:600 }}>{emailError}</div>
+                  )}
+                  <div className="glow-divider" style={{ margin:'18px 0' }}></div>
+                  <button onClick={handleEmail} className="btn btn-punk"
+                    style={{ width:'100%', padding:'16px', fontSize:'16px', display:'flex', alignItems:'center', justifyContent:'center', gap:'10px' }}>
+                    <IcoBolt/> Entrar a DAFTAPP
+                  </button>
+                </div>
+              </div>
+              <Footer/>
+            </div>
+          );
+        }
 
         /* ============ PANTALLA 0: ELEGIR TONALIDAD ============ */
         if (screen === 0) {
